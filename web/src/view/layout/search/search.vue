@@ -1,37 +1,46 @@
 <template>
   <div class="search-component">
     <transition name="el-fade-in-linear">
-      <div class="transition-box" style="display: inline-block; " v-show="show">
+      <div v-show="show" class="transition-box" style="display: inline-block; ">
         <el-select
-          @blur="hiddenSearch"
-          @change="changeRouter"
+          ref="search-input"
+          v-model="value"
           filterable
           placeholder="请选择"
-          v-model="value"
+          @blur="hiddenSearch"
+          @change="changeRouter"
         >
           <el-option
+            v-for="item in routerList"
             :key="item.value"
             :label="item.label"
             :value="item.value"
-            v-for="item in routerList"
-          ></el-option>
+          />
         </el-select>
       </div>
     </transition>
-    <div :style="{display:'inline-block'}">
-      <i @click="show = !show" class="el-icon-search search-icon"></i>
+    <div
+      :style="{display:'inline-block',float:'right',width:'31px',textAlign:'left',fontSize:'16px',paddingTop:'2px'}"
+      class="user-box"
+    >
+      <i :style="{cursor:'pointer'}" class="el-icon-refresh reload" :class="[reload ? 'reloading' : '']" @click="handleReload" />
+    </div>
+    <div :style="{display:'inline-block',float:'right'}" class="user-box">
+      <i :style="{cursor:'pointer'}" class="el-icon-search search-icon" @click="showSearch()" />
     </div>
   </div>
 </template>
+
 <script>
 import { mapGetters } from 'vuex'
 
 export default {
-  name: 'searchComponent',
+  name: 'SearchComponent',
   data() {
     return {
       value: '',
-      show: false
+      show: false,
+      reload: false
     }
   },
   computed: {
@@ -44,30 +53,39 @@ export default {
     },
     hiddenSearch() {
       this.show = false
+    },
+    showSearch() {
+      this.show = true
+      this.$nextTick(() => {
+        this.$refs['search-input'].focus()
+      })
+    },
+    handleReload() {
+      this.reload = true
+      this.$bus.$emit('reload')
+      setTimeout(() => {
+        this.reload = false
+      }, 500)
     }
   }
 }
 </script>
-<style lang="scss">
-.search-component {
-  display: inline-block;
-  .el-input__inner {
-    border: none;
-    border-bottom: 1px solid #606266;
+<style scoped lang="scss">
+.reload{
+  font-size: 17px;
+  &:hover{
+    transform: scale(1.02)
   }
-  .el-dropdown-link {
-    cursor: pointer;
-  }
-  .search-icon {
-    font-size: 20px;
-    margin-right: 14px;
-    display: inline-block;
-    vertical-align: middle;
-    box-sizing: border-box;
-    color: #606266;
-  }
-  .dropdown-group {
-    min-width: 100px;
-  }
+}
+
+.reloading{
+  animation:turn 0.5s linear infinite;
+}
+@keyframes turn {
+  0%{-webkit-transform:rotate(0deg);}
+  25%{-webkit-transform:rotate(90deg);}
+  50%{-webkit-transform:rotate(180deg);}
+  75%{-webkit-transform:rotate(270deg);}
+  100%{-webkit-transform:rotate(360deg);}
 }
 </style>
